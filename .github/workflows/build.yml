@@ -1,4 +1,4 @@
-name: Build and Release
+name: Build Windows Executable
 
 on:
   push:
@@ -9,8 +9,8 @@ on:
       - main
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build-windows:
+    runs-on: windows-latest  # Verwenden eines Windows-Servers für den Build
 
     steps:
       # Schritt 1: Checkout des Codes
@@ -27,29 +27,26 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller pandas openpyxl tkinterdnd2
+          pip install pyinstaller pandas openpyxl tkinterdnd2 pillow
 
-      # Schritt 4: Icon in .ico umwandeln (für Windows)
+      # Schritt 4: PNG zu ICO konvertieren
       - name: Convert PNG to ICO
         run: |
-          sudo apt-get install imagemagick
-          convert icon.png icon.ico
+          python -c "from PIL import Image; img = Image.open('icon.png'); img.save('icon.ico', format='ICO', sizes=[(256, 256)])"
 
-      # Schritt 5: PyInstaller ausführen, um die App zu kompilieren
+      # Schritt 5: PyInstaller ausführen, um die .exe zu kompilieren
       - name: Build the executable
         run: |
           pyinstaller --onefile --icon=icon.ico --add-data "icon.png:." main.py
 
-      # Schritt 6: Erstelle das Release und lade die Dateien hoch
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            dist/*
+      # Schritt 6: Liste der Dateien im dist/ Verzeichnis anzeigen (Debugging)
+      - name: List files in dist/ directory
+        run: |
+          dir dist/
 
-      # Schritt 7: Führe das Release durch
-      - name: Upload release assets
-        uses: actions/upload-artifact@v2
+      # Schritt 7: Lade die .exe hoch als Artifact
+      - name: Upload .exe as artifact
+        uses: actions/upload-artifact@v4
         with:
           name: Executable Files
-          path: dist/*
+          path: dist/main.exe  # Die Windows .exe-Datei, die PyInstaller erstellt hat
