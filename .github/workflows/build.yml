@@ -1,0 +1,55 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Schritt 1: Checkout des Codes
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Schritt 2: Python einrichten
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      # Schritt 3: Abhängigkeiten installieren
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller pandas openpyxl tkinterdnd2
+
+      # Schritt 4: Icon in .ico umwandeln (für Windows)
+      - name: Convert PNG to ICO
+        run: |
+          sudo apt-get install imagemagick
+          convert icon.png icon.ico
+
+      # Schritt 5: PyInstaller ausführen, um die App zu kompilieren
+      - name: Build the executable
+        run: |
+          pyinstaller --onefile --icon=icon.ico --add-data "icon.png:." main.py
+
+      # Schritt 6: Erstelle das Release und lade die Dateien hoch
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/*
+
+      # Schritt 7: Führe das Release durch
+      - name: Upload release assets
+        uses: actions/upload-artifact@v2
+        with:
+          name: Executable Files
+          path: dist/*
