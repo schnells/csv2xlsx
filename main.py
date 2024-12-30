@@ -3,7 +3,9 @@ import pandas as pd
 from tkinter import Tk, Label, messagebox, Checkbutton, IntVar, Frame
 from tkinterdnd2 import DND_FILES, TkinterDnD
 from openpyxl import load_workbook
-
+# from https://stackoverflow.com/a/70529292/6615718
+from PyInstaller.utils.hooks import collect_data_files
+datas = collect_data_files('tkinterdnd2')
 
 def apply_auto_width(file_path):
     """Wendet automatische Spaltenbreite auf die Excel-Datei an."""
